@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kyverno-enterprise-policies
+description: A comprehensive Kyverno policy suite for HPA, Labeling, and Security enforcement.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -1,0 +1,109 @@
+---
+# Source: kyverno-enterprise-policies/templates/hpa/artifacthub-pkg.yml
+version: 1.0.0
+name: auto-generate-hpa
+displayName: Auto Generate HPA
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Automatically generates HorizontalPodAutoscalers based on dynamic Helm values.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Autoscaling
+digest: ""
+---
+# Source: kyverno-enterprise-policies/templates/labeling/artifacthub-pkg.yml
+version: 1.0.0
+name: enforce-custom-labels
+displayName: Enforce Custom Labels
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Validates that all workloads contain mandatory organizational labels defined in Helm values.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Best Practices
+digest: ""
+---
+# Source: kyverno-enterprise-policies/templates/security/artifacthub-pkg.yml
+version: 1.0.0
+name: block-plaintext-secrets
+displayName: Block Plaintext Secrets
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Prevents users from passing unencoded secrets via the stringData field in Kubernetes Secrets.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Security
+digest: ""
+---
+# Source: kyverno-enterprise-policies/templates/hpa/policy.yaml
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: auto-generate-hpa
+  annotations:
+    policies.kyverno.io/title: Auto-Generate HPA
+    policies.kyverno.io/category: Autoscaling
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: generate-hpa-for-deployments
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              selector:
+                matchLabels:
+                  autoscale: "true"
+      generate:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        # Escaped Kyverno variables so Helm ignores them
+        name: '{{request.object.metadata.name}}-hpa'
+        namespace: '{{request.namespace}}'
+        synchronize: true
+        data:
+          spec:
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: '{{request.object.metadata.name}}'
+            minReplicas: 3
+            maxReplicas: 5
+            metrics:
+              - type: Resource
+                resource:
+                  name: cpu
+                  target:
+                    type: Utilization
+                    averageUtilization: 80
+---
+# Source: kyverno-enterprise-policies/templates/labeling/policy.yaml
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-custom-labels
+  annotations:
+    policies.kyverno.io/title: Enforce Custom Labels
+    policies.kyverno.io/category: Best Practices
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: require-helm-defined-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Deployment
+                - StatefulSet
+      validate:
+        message: "Workloads must contain the mandatory labels defined in the policy."
+        pattern:
+          metadata:
+            labels:
+              env: "dev"
+              name: "app"
+              team: "devops"

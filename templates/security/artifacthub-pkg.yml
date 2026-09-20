@@ -1,0 +1,10 @@
+version: 1.0.0
+name: block-plaintext-secrets
+displayName: Block Plaintext Secrets
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Prevents users from passing unencoded secrets via the stringData field in Kubernetes Secrets.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Security
+digest: ""

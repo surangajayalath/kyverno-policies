@@ -1,0 +1,10 @@
+version: 1.0.0
+name: auto-generate-hpa
+displayName: Auto Generate HPA
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Automatically generates HorizontalPodAutoscalers based on dynamic Helm values.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Autoscaling
+digest: ""

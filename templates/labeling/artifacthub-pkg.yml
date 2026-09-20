@@ -1,0 +1,10 @@
+version: 1.0.0
+name: enforce-custom-labels
+displayName: Enforce Custom Labels
+createdAt: "2026-09-20T00:00:00.000Z"
+description: Validates that all workloads contain mandatory organizational labels defined in Helm values.
+provider:
+  name: Enterprise DevOps
+annotations:
+  kyverno/category: Best Practices
+digest: ""

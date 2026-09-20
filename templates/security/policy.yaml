@@ -1,0 +1,27 @@
+{{- if and .Values.Security.enabled .Values.Security.base64 }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: block-plaintext-secrets
+  annotations:
+    policies.kyverno.io/title: Block Plaintext Secrets
+    policies.kyverno.io/category: Security
+spec:
+  validationFailureAction: {{ title .Values.policyEnforcement }}
+  background: true
+  rules:
+    - name: block-stringdata
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+      validate:
+        message: "Plaintext secrets using 'stringData' are forbidden. You must use base64 encoded 'data'."
+        deny:
+          conditions:
+            any:
+              - key: "{{ "{{ request.object.stringData }}" }}" # Escaped templating for Kyverno JMESPath
+                operator: NotEquals
+                value: null
+{{- end }}

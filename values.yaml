@@ -1,0 +1,24 @@
+# Global policy enforcement mode. 
+# Options: 'enforce' (blocks non-compliant resources) or 'audit' (allows but logs warnings)
+policyEnforcement: audit
+
+HPA:
+  enabled: true
+  min: 3
+  max: 5
+  # Trigger HPA generation for deployments matching this label
+  targetLabelKey: "autoscale"
+  targetLabelValue: "true"
+
+Labeling:
+  enabled: true
+  # Workloads must contain these exact keys and values
+  labels:
+    name: app
+    env: dev
+    team: devops
+
+Security:
+  enabled: false
+  # If true, blocks 'stringData' in Secrets, forcing base64 'data' fields
+  base64: true

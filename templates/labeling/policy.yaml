@@ -1,0 +1,29 @@
+{{- if .Values.Labeling.enabled }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-custom-labels
+  annotations:
+    policies.kyverno.io/title: Enforce Custom Labels
+    policies.kyverno.io/category: Best Practices
+spec:
+  validationFailureAction: {{ title .Values.policyEnforcement }}
+  background: true
+  rules:
+    - name: require-helm-defined-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Deployment
+                - StatefulSet
+      validate:
+        message: "Workloads must contain the mandatory labels defined in the policy."
+        pattern:
+          metadata:
+            labels:
+              {{- range $key, $value := .Values.Labeling.labels }}
+              {{ $key }}: "{{ $value }}"
+              {{- end }}
+{{- end }}
