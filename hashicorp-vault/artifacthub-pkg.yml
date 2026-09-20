@@ -1,0 +1,12 @@
+version: 1.0.0
+name: auto-inject-vault-annotations
+displayName: Auto-Inject Vault Annotations
+createdAt: "2026-03-26T00:00:00.000Z"
+description: Automatically injects Vault agent annotations into Kubernetes resources.
+  name: msj
+ignore:
+  # - README.md
+annotations:
+  kyverno/category: Other
+  kyverno/kubernetesVersion: "1.25"
+digest: ""
