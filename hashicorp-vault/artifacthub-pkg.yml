@@ -3,7 +3,8 @@ name: auto-inject-vault-annotations
 displayName: Auto-Inject Vault Annotations
 createdAt: "2026-03-26T00:00:00.000Z"
 description: Automatically injects Vault agent annotations into Kubernetes resources.
-  name: msj
+provider:
+  name: DevOps Team
 ignore:
   # - README.md
 annotations:

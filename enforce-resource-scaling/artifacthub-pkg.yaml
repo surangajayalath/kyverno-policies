@@ -1,0 +1,13 @@
+version: 1.1.0
+name: auto-generate-production-hpa-if-not-exists
+displayName: Auto-Generate Production HPA If Not Exists
+createdAt: "2026-03-26T00:00:00.000Z"
+description: Automatically generates a HorizontalPodAutoscaler only if one does not already exist for production workloads.
+provider:
+  name: DevOps Team
+ignore:
+  # - README.md
+annotations:
+  kyverno/category: Autoscaling
+  kyverno/kubernetesVersion: "1.25"
+digest: ""

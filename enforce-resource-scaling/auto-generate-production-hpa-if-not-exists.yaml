@@ -1,0 +1,56 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: auto-generate-production-hpa-if-not-exists
+  annotations:
+    policies.kyverno.io/title: Auto-Generate Production HPA If Not Exists
+    policies.kyverno.io/category: Autoscaling
+    policies.kyverno.io/description: >-
+      Automatically generates an HPA for production Deployments and StatefulSets 
+      only if an HPA does not already exist for that workload.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: generate-hpa-conditional
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+                - StatefulSet
+              selector:
+                matchLabels:
+                  production: "true"
+      # Context fetches existing HPA resources in the same namespace to check for existence
+      context:
+        - name: existingHpa
+          apiCall:
+            urlPath: /apis/autoscaling/v2/namespaces/{{request.namespace}}/horizontalpodautoscalers/{{request.object.metadata.name}}-hpa
+      # Pre-condition: Only proceed if the API call returns a 404 (meaning the HPA does NOT exist yet)
+      preconditions:
+        any:
+          - key: "{{ existingHpa.responseCode }}"
+            operator: Equals
+            value: 404
+      generate:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        name: "{{request.object.metadata.name}}-hpa"
+        namespace: "{{request.namespace}}"
+        synchronize: true
+        data:
+          spec:
+            scaleTargetRef:
+              apiVersion: "{{request.object.apiVersion}}"
+              kind: "{{request.object.kind}}"
+              name: "{{request.object.metadata.name}}"
+            minReplicas: 2
+            maxReplicas: 100
+            metrics:
+              - type: Resource
+                resource:
+                  name: cpu
+                  target:
+                    type: Utilization
+                    averageUtilization: 80
