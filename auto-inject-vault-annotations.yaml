@@ -1,0 +1,60 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: auto-inject-vault-annotations
+  annotations:
+    policies.kyverno.io/title: Auto-Inject Vault Annotations
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/description: >-
+      Adds Vault agent annotations including the vault namespace.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: inject-vault-deployment
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              namespaceSelector:
+                matchLabels:
+                  vault-injector: "true"
+      mutate:
+        patchescsjson6902: |-
+          - op: add
+            path: /spec/template/metadata/annotations
+            value: {}
+          - op: add
+            path: /spec/template/metadata/annotations/vault.hashicorp.com~1agent-inject
+            value: "true"
+          - op: add
+            path: /spec/template/metadata/annotations/vault.hashicorp.com~1role
+            value: "devops-dev-role"
+          - op: add
+            path: /spec/template/metadata/annotations/vault.hashicorp.com~1namespace
+            value: "devops"
+
+    - name: inject-vault-pod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaceSelector:
+                matchLabels:
+                  vault-injector: "true"
+      mutate:
+        patchescsjson6902: |-
+          - op: add
+            path: /metadata/annotations
+            value: {}
+          - op: add
+            path: /metadata/annotations/vault.hashicorp.com~1agent-inject
+            value: "true"
+          - op: add
+            path: /metadata/annotations/vault.hashicorp.com~1role
+            value: "devops-dev-role"
+          - op: add
+            path: /metadata/annotations/vault.hashicorp.com~1namespace
+            value: "devops"
